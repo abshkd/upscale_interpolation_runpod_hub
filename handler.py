@@ -8,16 +8,16 @@ import uuid
 import logging
 import urllib.request
 import urllib.parse
-import binascii # Base64 에러 처리를 위해 import
+import binascii # Import for Base64 error handling
 import time
 
-# 로깅 설정
+# Logging setup
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# CUDA 검사 및 설정
+# CUDA check and setup
 def check_cuda_availability():
-    """CUDA 사용 가능 여부를 확인하고 환경 변수를 설정합니다."""
+    """Check CUDA availability and set environment variables."""
     try:
         import torch
         if torch.cuda.is_available():
@@ -31,7 +31,7 @@ def check_cuda_availability():
         logger.error(f"❌ CUDA check failed: {e}")
         raise RuntimeError(f"CUDA initialization failed: {e}")
 
-# CUDA 검사 실행
+# Execute CUDA check
 try:
     cuda_available = check_cuda_availability()
     if not cuda_available:
@@ -88,7 +88,7 @@ def get_images(ws, prompt):
         if 'images' in node_output:
             for image in node_output['images']:
                 image_data = get_image(image['filename'], image['subfolder'], image['type'])
-                # bytes 객체를 base64로 인코딩하여 JSON 직렬화 가능하게 변환
+                # Encode bytes object to base64 for JSON serialization
                 if isinstance(image_data, bytes):
                     import base64
                     image_data = base64.b64encode(image_data).decode('utf-8')
@@ -116,7 +116,7 @@ def get_video_path(ws, prompt):
         node_output = history['outputs'][node_id]
         if 'gifs' in node_output:
             for video in node_output['gifs']:
-                # 첫 번째 비디오 파일 경로 반환
+                # Return first video file path
                 return video['fullpath']
     
     return None
@@ -131,134 +131,139 @@ def handler(job):
     logger.info(f"Received job input: {job_input}")
     task_id = f"task_{uuid.uuid4()}"
 
-    # 작업 타입 확인
+    # Check task type
     task_type = job_input.get("task_type", "upscale")
     
-    # 비디오 입력 처리 (video_path, video_url, video_base64 중 하나)
+    # Process video input (one of: video_path, video_url, video_base64)
     video_path_input = job_input.get("video_path")
     video_url_input = job_input.get("video_url")
     video_base64_input = job_input.get("video_base64")
     
     if not (video_path_input or video_url_input or video_base64_input):
-        return {"error": "비디오 입력이 필요합니다. (video_path, video_url, video_base64 중 하나)"}
+        return {"error": "Video input required (one of: video_path, video_url, video_base64)"}
     
-    # 비디오 파일 경로 확보
+    # Obtain video file path
     if video_path_input:
-        # 파일 경로인 경우
+        # If file path
         if video_path_input == "/example_video.mp4":
             video_path = "/example_video.mp4"
             return {"video": "test"}
         else:
             video_path = video_path_input
     elif video_url_input:
-        # URL인 경우 다운로드
+        # If URL, download it
         try:
             import urllib.request
             video_path = os.path.join(task_id, "input_video.mp4")
             os.makedirs(task_id, exist_ok=True)
             urllib.request.urlretrieve(video_url_input, video_path)
-            logger.info(f"비디오 URL에서 다운로드 완료: {video_url_input}")
+            logger.info(f"Video downloaded from URL: {video_url_input}")
         except Exception as e:
-            return {"error": f"비디오 URL 다운로드 실패: {e}"}
+            return {"error": f"Video URL download failed: {e}"}
     elif video_base64_input:
-        # Base64인 경우 디코딩하여 저장
+        # If Base64, decode and save
         try:
             os.makedirs(task_id, exist_ok=True)
             video_path = os.path.join(task_id, "input_video.mp4")
+            
+            # Strip data URI prefix if present
+            if video_base64_input.startswith('data:'):
+                video_base64_input = video_base64_input.split(',', 1)[1]
+            
             decoded_data = base64.b64decode(video_base64_input)
             with open(video_path, 'wb') as f:
                 f.write(decoded_data)
-            logger.info(f"Base64 비디오를 '{video_path}' 파일로 저장했습니다.")
+            logger.info(f"Base64 video saved to file '{video_path}'.")
         except Exception as e:
-            return {"error": f"Base64 비디오 디코딩 실패: {e}"}
+            return {"error": f"Base64 video decoding failed: {e}"}
     
-    # workflow 로드 및 설정
+    # Load and configure workflow
     if task_type == "upscale":
-        # 업스케일링만 하는 경우
+        # Upscaling only
         prompt = load_workflow("/upscale.json")
         prompt["8"]["inputs"]["video"] = video_path
     elif task_type == "upscale_and_interpolation":
-        # 업스케일링 + 프레임 보간
+        # Upscaling + frame interpolation
         prompt = load_workflow("/upscale_and_interpolation.json")
         prompt["8"]["inputs"]["video"] = video_path
     else:
-        return {"error": f"지원하지 않는 작업 타입입니다: {task_type}"}
+        return {"error": f"Unsupported task type: {task_type}"}
 
-    # ComfyUI 서버 연결 및 처리
+    # Connect to ComfyUI server and process
     ws_url = f"ws://{server_address}:8188/ws?clientId={client_id}"
     logger.info(f"Connecting to WebSocket: {ws_url}")
     
-    # 먼저 HTTP 연결이 가능한지 확인
+    # First check if HTTP connection is available
     http_url = f"http://{server_address}:8188/"
     logger.info(f"Checking HTTP connection to: {http_url}")
     
-    # HTTP 연결 확인 (최대 1분)
+    # Check HTTP connection (up to 1 minute)
     max_http_attempts = 180
     for http_attempt in range(max_http_attempts):
         try:
             import urllib.request
             response = urllib.request.urlopen(http_url, timeout=5)
-            logger.info(f"HTTP 연결 성공 (시도 {http_attempt+1})")
+            logger.info(f"HTTP connection successful (attempt {http_attempt+1})")
             break
         except Exception as e:
-            logger.warning(f"HTTP 연결 실패 (시도 {http_attempt+1}/{max_http_attempts}): {e}")
+            logger.warning(f"HTTP connection failed (attempt {http_attempt+1}/{max_http_attempts}): {e}")
             if http_attempt == max_http_attempts - 1:
-                raise Exception("ComfyUI 서버에 연결할 수 없습니다. 서버가 실행 중인지 확인하세요.")
+                raise Exception("Cannot connect to ComfyUI server. Please check if the server is running.")
             time.sleep(1)
     
     ws = websocket.WebSocket()
-    # 웹소켓 연결 시도 (최대 3분)
-    max_attempts = int(180/5)  # 3분 (1초에 한 번씩 시도)
+    # Attempt WebSocket connection (up to 3 minutes)
+    max_attempts = int(180/5)  # 3 minutes (attempt every second)
     for attempt in range(max_attempts):
         import time
         try:
             ws.connect(ws_url)
-            logger.info(f"웹소켓 연결 성공 (시도 {attempt+1})")
+            logger.info(f"WebSocket connection successful (attempt {attempt+1})")
             break
         except Exception as e:
-            logger.warning(f"웹소켓 연결 실패 (시도 {attempt+1}/{max_attempts}): {e}")
+            logger.warning(f"WebSocket connection failed (attempt {attempt+1}/{max_attempts}): {e}")
             if attempt == max_attempts - 1:
-                raise Exception("웹소켓 연결 시간 초과 (3분)")
+                raise Exception("WebSocket connection timeout (3 minutes)")
             time.sleep(5)
     
     video_path = get_video_path(ws, prompt)
     ws.close()
 
-    # 비디오가 없는 경우 처리
+    # Handle case when video is not available
     if not video_path:
-        return {"error": "비디오를 생성할 수 없습니다."}
+        return {"error": "Unable to generate video."}
     
-    # network_volume 파라미터 확인
+    # Check network_volume parameter
     use_network_volume = job_input.get("network_volume", False)
     
     if use_network_volume:
-        # 네트워크 볼륨 사용: 파일 경로 반환
+        # Using network volume: return file path
         try:
-            # 결과 비디오 파일 경로 생성
+            # Create output video file path
             output_filename = f"{task_type}_{task_id}.mp4"
             output_path = f"/runpod-volume/{output_filename}"
             
-            # 원본 파일을 결과 경로로 복사
+            # Copy original file to output path
             import shutil
             shutil.copy2(video_path, output_path)
             
-            logger.info(f"결과 비디오를 '{output_path}'에 저장했습니다.")
+            logger.info(f"Result video saved to '{output_path}'.")
             return {"video_path": output_path}
             
         except Exception as e:
-            logger.error(f"비디오 저장 실패: {e}")
-            return {"error": f"비디오 저장 실패: {e}"}
+            logger.error(f"Video save failed: {e}")
+            return {"error": f"Video save failed: {e}"}
     else:
-        # 네트워크 볼륨 미사용: Base64 인코딩하여 반환
+        # Not using network volume: Base64 encode and return
         try:
             with open(video_path, 'rb') as f:
                 video_data = base64.b64encode(f.read()).decode('utf-8')
             
-            logger.info("비디오를 Base64로 인코딩하여 반환했습니다.")
+            logger.info("Video encoded to Base64 and returned.")
             return {"video": video_data}
             
         except Exception as e:
-            logger.error(f"비디오 Base64 인코딩 실패: {e}")
-            return {"error": f"비디오 인코딩 실패: {e}"}
+            logger.error(f"Video Base64 encoding failed: {e}")
+            return {"error": f"Video encoding failed: {e}"}
 
 runpod.serverless.start({"handler": handler})

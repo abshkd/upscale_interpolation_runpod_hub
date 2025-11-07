@@ -1,23 +1,11 @@
+## This is a fork that fixes the AI generated code and makes it work correctly but also improves upon it.
 # Video Upscale & Frame Interpolation for RunPod Serverless
-[한국어 README 보기](README_kr.md)
+It should also work locally now. Credits to the original author.
 
-This project is a RunPod Serverless template for video upscaling and frame interpolation using ComfyUI.
-
-[![Runpod](https://api.runpod.io/badge/wlsdml1114/upscale_interpolation_runpod_hub)](https://console.runpod.io/hub/wlsdml1114/upscale_interpolation_runpod_hub)
-
-## 🎨 Engui Studio Integration
-
-[![EnguiStudio](https://raw.githubusercontent.com/wlsdml1114/Engui_Studio/main/assets/banner.png)](https://github.com/wlsdml1114/Engui_Studio)
-
-This InfiniteTalk template is primarily designed for **Engui Studio**, a comprehensive AI model management platform. While it can be used via API, Engui Studio provides enhanced features and broader model support.
-
-**Engui Studio Benefits:**
-- **Expanded Model Support**: Access to a wider variety of AI models beyond what's available through API
-- **Enhanced User Interface**: Intuitive workflow management and model selection
-- **Advanced Features**: Additional tools and capabilities for AI model deployment
-- **Seamless Integration**: Optimized for Engui Studio's ecosystem
-
-> **Note**: While this template works perfectly with API calls, Engui Studio users will have access to additional models and features that are planned for future releases.
+~~> **Note**: While this template works perfectly with API calls, Engui 
+Studio users will have access to additional models and features that are 
+planned for future releases.~~
+abshkd > Now it does.
 
 ## ✨ Key Features
 
