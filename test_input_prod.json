@@ -1,0 +1,6 @@
+{
+  "input": {
+    "task_type": "upscale_and_interpolation",
+    "video_path": "/example_video.mp4"
+  }
+}

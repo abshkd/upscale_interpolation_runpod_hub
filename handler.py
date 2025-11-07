@@ -154,8 +154,10 @@ def handler(job):
         # If URL, download it
         try:
             import urllib.request
-            video_path = os.path.join(task_id, "input_video.mp4")
-            os.makedirs(task_id, exist_ok=True)
+            # Save to ComfyUI input directory with unique filename
+            video_filename = f"{task_id}_input.mp4"
+            video_path = os.path.join("/ComfyUI/input", video_filename)
+            os.makedirs("/ComfyUI/input", exist_ok=True)
             urllib.request.urlretrieve(video_url_input, video_path)
             logger.info(f"Video downloaded from URL: {video_url_input}")
         except Exception as e:
@@ -163,8 +165,10 @@ def handler(job):
     elif video_base64_input:
         # If Base64, decode and save
         try:
-            os.makedirs(task_id, exist_ok=True)
-            video_path = os.path.join(task_id, "input_video.mp4")
+            # Save to ComfyUI input directory with unique filename
+            video_filename = f"{task_id}_input.mp4"
+            video_path = os.path.join("/ComfyUI/input", video_filename)
+            os.makedirs("/ComfyUI/input", exist_ok=True)
             
             # Strip data URI prefix if present
             if video_base64_input.startswith('data:'):
