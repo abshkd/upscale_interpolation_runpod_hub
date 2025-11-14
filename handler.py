@@ -12,7 +12,7 @@ import binascii # Import for Base64 error handling
 import time
 
 # Logging setup
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.WARN, force=True)
 logger = logging.getLogger(__name__)
 
 # CUDA check and setup

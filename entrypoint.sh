@@ -27,6 +27,8 @@ if [ $wait_count -ge $max_wait ]; then
 fi
 
 # Start the handler in the foreground
-# 이 스크립트가 컨테이너의 메인 프로세스가 됩니다.
+# This script becomes the main container process.
 echo "Starting the handler..."
-exec python handler.py
+# Use --rp_serve_api to keep container alive and listen for jobs
+# Without this flag, it runs test_input.json once and exits
+exec python handler.py --rp_serve_api --rp_log_level WARN --rp_api_host 0.0.0.0
