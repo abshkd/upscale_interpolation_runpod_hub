@@ -106,7 +106,8 @@
   },
   "16": {
     "inputs": {
-      "value": 2
+      "value": 2,
+      "control_after_generate": "fixed"
     },
     "class_type": "PrimitiveInt",
     "_meta": {
