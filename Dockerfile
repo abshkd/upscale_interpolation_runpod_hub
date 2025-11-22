@@ -35,8 +35,13 @@ RUN cd /ComfyUI/custom_nodes && \
     cd ComfyUI-VideoHelperSuite && \
     pip install -r requirements.txt
 
-RUN wget https://huggingface.co/Kim2091/2x-AnimeSharpV4/resolve/main/2x-AnimeSharpV4_Fast_RCAN_PU.safetensors -O /ComfyUI/models/upscale_models/2x-AnimeSharpV4_Fast_RCAN_PU.safetensors
+RUN cd /ComfyUI/custom_nodes && \
+    git clone https://github.com/kijai/ComfyUI-MMAudio.git && \
+    cd ComfyUI-MMAudio && \
+    pip install -r requirements.txt
 
+RUN wget https://huggingface.co/Kim2091/2x-AnimeSharpV4/resolve/main/2x-AnimeSharpV4_Fast_RCAN_PU.safetensors -O /ComfyUI/models/upscale_models/2x-AnimeSharpV4_Fast_RCAN_PU.safetensors
+RUN hf download Kijai/MMAudio_safetensors --include "*.safetensors" --local-dir /ComfyUI/models/mmaudio/
 
 WORKDIR /
 

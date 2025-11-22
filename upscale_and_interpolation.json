@@ -64,6 +64,10 @@
       "images": [
         "6",
         0
+      ],
+      "audio": [
+        "19",
+        0
       ]
     },
     "class_type": "VHS_VideoCombine",
@@ -107,6 +111,60 @@
     "class_type": "PrimitiveInt",
     "_meta": {
       "title": "multiplier"
+    }
+  },
+  "17": {
+    "inputs": {
+      "mmaudio_model": "mmaudio_large_44k_v2_fp32.safetensors",
+      "base_precision": "fp32"
+    },
+    "class_type": "MMAudioModelLoader",
+    "_meta": {
+      "title": "MMAudio ModelLoader"
+    }
+  },
+  "18": {
+    "inputs": {
+      "vae_model": "mmaudio_vae_44k_fp32.safetensors",
+      "synchformer_model": "mmaudio_synchformer_fp32.safetensors",
+      "clip_model": "apple_DFN5B-CLIP-ViT-H-14-384_fp32.safetensors",
+      "mode": "44k",
+      "precision": "fp32"
+    },
+    "class_type": "MMAudioFeatureUtilsLoader",
+    "_meta": {
+      "title": "MMAudio FeatureUtilsLoader"
+    }
+  },
+  "19": {
+    "inputs": {
+      "duration": [
+        "12",
+        2
+      ],
+      "steps": 25,
+      "cfg": 4.5,
+      "seed": 7,
+      "prompt": "",
+      "negative_prompt": "",
+      "mask_away_clip": false,
+      "force_offload": true,
+      "mmaudio_model": [
+        "17",
+        0
+      ],
+      "feature_utils": [
+        "18",
+        0
+      ],
+      "images": [
+        "6",
+        0
+      ]
+    },
+    "class_type": "MMAudioSampler",
+    "_meta": {
+      "title": "MMAudio Sampler"
     }
   }
 }
