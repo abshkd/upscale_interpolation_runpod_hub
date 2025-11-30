@@ -138,6 +138,7 @@ def handler(job):
     video_path_input = job_input.get("video_path")
     video_url_input = job_input.get("video_url")
     video_base64_input = job_input.get("video_base64")
+    positive_prompt = job_input.get("prompt", "")
     
     if not (video_path_input or video_url_input or video_base64_input):
         return {"error": "Video input required (one of: video_path, video_url, video_base64)"}
@@ -190,6 +191,7 @@ def handler(job):
         # Upscaling + frame interpolation
         prompt = load_workflow("/upscale_and_interpolation.json")
         prompt["8"]["inputs"]["video"] = video_path
+        prompt["19"]["prompt"] = positive_prompt
     else:
         return {"error": f"Unsupported task type: {task_type}"}
 

@@ -1,5 +1,5 @@
 # Use specific version of nvidia cuda image
-FROM wlsdml1114/multitalk-base:1.4 as runtime
+FROM wlsdml1114/multitalk-base:1.4 AS runtime
 
 RUN pip install -U "huggingface_hub[hf_transfer]"
 RUN pip install runpod websocket-client
@@ -42,6 +42,11 @@ RUN cd /ComfyUI/custom_nodes && \
 
 RUN wget https://huggingface.co/Kim2091/2x-AnimeSharpV4/resolve/main/2x-AnimeSharpV4_Fast_RCAN_PU.safetensors -O /ComfyUI/models/upscale_models/2x-AnimeSharpV4_Fast_RCAN_PU.safetensors
 RUN hf download Kijai/MMAudio_safetensors --include "*.safetensors" --local-dir /ComfyUI/models/mmaudio/
+# Downloading nvidia bigvgan vocoder model to: /ComfyUI/models/mmaudio/nvidia/bigvgan_v2_44khz_128band_512x
+RUN hf download nvidia/bigvgan_v2_44khz_128band_512x --local-dir /ComfyUI/models/mmaudio/
+# Downloading: "https://github.com/styler00dollar/VSGAN-tensorrt-docker/releases/download/models/rife49.pth" to /ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation/ckpts/rife/rife49.pth
+RUN mkdir -p /ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation/ckpts/rife/
+RUN wget https://github.com/styler00dollar/VSGAN-tensorrt-docker/releases/download/models/rife49.pth -O /ComfyUI/custom_nodes/ComfyUI-Frame-Interpolation/ckpts/rife/rife49.pth
 
 WORKDIR /
 

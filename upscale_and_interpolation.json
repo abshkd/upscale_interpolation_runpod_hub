@@ -147,7 +147,7 @@
       "cfg": 4.5,
       "seed": 7,
       "prompt": "",
-      "negative_prompt": "",
+      "negative_prompt": "music, speech, talking",
       "mask_away_clip": false,
       "force_offload": true,
       "mmaudio_model": [
