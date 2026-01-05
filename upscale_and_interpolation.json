@@ -58,7 +58,7 @@
       "pix_fmt": "yuv420p",
       "crf": 15,
       "save_metadata": false,
-      "trim_to_audio": true,
+      "trim_to_audio": false,
       "pingpong": false,
       "save_output": true,
       "images": [
@@ -147,7 +147,7 @@
       "cfg": 4.5,
       "seed": 7,
       "prompt": "",
-      "negative_prompt": "music, speech, talking",
+      "negative_prompt": "",
       "mask_away_clip": false,
       "force_offload": true,
       "mmaudio_model": [
